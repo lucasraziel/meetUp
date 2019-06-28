@@ -39,6 +39,73 @@ class MeetupController {
 
     return response.json(meetup);
   }
+
+  async update(request, response) {
+    const meetup = await Meetup.findByPk(request.params.id);
+
+    if (!meetup) {
+      return response.status(400).json({ error: 'Invalid id for meetup' });
+    }
+
+    if (request.user !== meetup.user) {
+      return response
+        .status(400)
+        .json({ error: 'You can only update your meetups' });
+    }
+
+    if (isBefore(meetup.date, new Date())) {
+      return response.status(400).json({
+        error: 'You cannot change meetups from the past',
+      });
+    }
+
+    if (request.body.date) {
+      if (isBefore(parseISO(request.body.date), new Date())) {
+        return response.status(400).json({
+          error: 'You cannot change meetups to the past',
+        });
+      }
+    }
+
+    const newMeetup = await meetup.update(request.body);
+
+    return response.json(newMeetup);
+  }
+
+  async index(request, response) {
+    const meetups = await Meetup.findAll({
+      where: {
+        user_id: request.userId,
+      },
+      attributes: ['title', 'description', 'localization', 'date'],
+    });
+
+    return response.json(meetups);
+  }
+
+  async delete(request, response) {
+    const meetup = await Meetup.findByPk(request.params.id);
+
+    if (!meetup) {
+      return response.status(400).json({ error: 'Invalid id for meetup' });
+    }
+
+    if (request.user !== meetup.user) {
+      return response
+        .status(400)
+        .json({ error: 'You can only update your meetups' });
+    }
+
+    if (isBefore(meetup.date, new Date())) {
+      return response.status(400).json({
+        error: 'You cannot change meetups from the past',
+      });
+    }
+
+    meetup.destroy();
+
+    return response.json({ deletedMeetup: meetup });
+  }
 }
 
 export default new MeetupController();
