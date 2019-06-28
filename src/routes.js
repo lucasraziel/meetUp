@@ -6,6 +6,7 @@ import SessionController from './app/controllers/SessionController';
 
 import authMiddleware from './app/middlewares/auth';
 import BannerController from './app/controllers/BannerController';
+import MeetupController from './app/controllers/MeetupController';
 
 const routes = new Router();
 const upload = multer(multerConfig);
@@ -17,5 +18,7 @@ routes.use(authMiddleware);
 routes.put('/users', UserController.update);
 
 routes.post('/banners', upload.single('banner'), BannerController.store);
+
+routes.post('/meetups', MeetupController.store);
 
 export default routes;
